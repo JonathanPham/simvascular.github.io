@@ -102,7 +102,7 @@ $$\textbf{E}^{e}\left(\textbf{y}^{e}, t\right)\cdot\dot{\textbf{y}}^{e} + \textb
 
 <br>
 <figure>
-  <img class="svImg svImgMd" src="documentation/rom_simulation/0d-solver/images/BloodVessel.png">
+  <img class="svImg svImgMd" src="documentation/rom_simulation/0d-solver/images/RCL.png">
   <figcaption class="svCaption"> BloodVessel element.
   </figcaption>
 </figure>
@@ -115,61 +115,48 @@ The governing equations for the local BloodVessel element, including the stenosi
 
 $$P\_{in}^{e} - P\_{out}^{e} - R\left(Q\_{in}^{e}\right)Q\_{in}^{e} - L\frac{dQ\_{out}^{e}}{dt} = 0$$
 
-$$\left(1 + C\frac{dR\left(Q\_{in}^{e}\right)}{dQ\_{in}^{e}}\frac{dQ\_{in}^{e}}{dt}\right)Q\_{in}^{e} - Q\_{out}^{e} - C\frac{dP\_{in}^{e}}{dt} + CR\left(Q\_{in}^{e}\right)\frac{dQ\_{in}^{e}}{dt} = 0.$$
+$$Q\_{in}^{e} - Q\_{out}^{e} - C\frac{dP\_{c}^{e}}{dt} = 0.$$
 
-where $R\left(Q\_{in}^{e}\right) = R\_{s}\left(Q\_{in}^{e}\right) + R\_{c}\left(Q\_{in}^{e}\right)$, $R\_{s}\left(Q\_{in}^{e}\right) = K\_{t}\frac{\rho}{2A\_{o}^{2}}\left(\frac{A\_{o}}{A\_{s}} - 1\right)^{2}|Q|$, and $R\_{c}\left(Q\_{in}^{e}\right) = \frac{8\mu L}{\pi r^{4}}$. 
+$$P\_{in}^{e} - R\left(Q\_{in}^{e}\right)Q\_{in}^{e} - P\_{c} = 0$$
 
-<!-- $R\_{c}\left(Q\_{in}^{e}\right) = 0.1033\sqrt{K\left(Q\_{in}^{e}\right)}\left(\sqrt{1 + \frac{1.729}{K\left(Q\_{in}^{e}\right)}} - \frac{1.315}{\sqrt{K\left(Q\_{in}^{e}\right)}}\right)^{-3}\frac{8\mu L}{\pi r^{4}}$ -->
-
-<!-- and $K\left(Q\_{in}^{e}\right) = Re\left(Q\_{in}^{e}\right)\sqrt{\frac{r}{r\_{c}}}$
-
-and $r\_{c}$ is the radius of curvature
-
-and $Re\left(Q\_{in}^{e}\right) = \frac{Q\_{in}^{e}L}{\pi r^{2}\nu}$. -->
+where $R\left(Q\right) = R\_{s}\left(Q\right) + R\_{p}$, $R\_{s}\left(Q\right) = K\_{t}\frac{\rho}{2A\_{o}^{2}}\left(\frac{A\_{o}}{A\_{s}} - 1\right)^{2}|Q|$, and $R\_{p} = \frac{8\mu L}{\pi r^{4}}.$
 
 The local contributions to the global arrays are
 
 \begin{gather}
     \textbf{y}^{e} =
         \begin{bmatrix}
-            P\_{in}^{e} & Q\_{in}^{e} & P\_{out}^{e} & Q\_{out}^{e}
+            P\_{in}^{e} & Q\_{in}^{e} & P\_{out}^{e} & Q\_{out}^{e} & P\_{c}
         \end{bmatrix}^T,
 \end{gather}
 
 \begin{gather}
     \textbf{E}^{e} =
         \begin{bmatrix}
-            0 &  0 &  0 & -L \ \cr
-            -C & CR\left(Q\_{in}^{e}\right) &  0 &  0 \ \cr
+            0 &  0 &  0 & -L &  0 \ \cr
+            0 &  0 &  0 &  0 & -C \ \cr
+            0 &  0 &  0 &  0 &  0
         \end{bmatrix},
 \end{gather}
 
 \begin{gather}
     \textbf{F}^{e} =
         \begin{bmatrix}
-            1 & -R\left(Q\_{in}^{e}\right) & -1 &  0 \ \cr
-            0 &  1 + C\frac{dR\left(Q\_{in}^{e}\right)}{dQ\_{in}^{e}}\frac{dQ\_{in}^{e}}{dt} &  0 & -1 \ \cr
-        \end{bmatrix},
-\end{gather}
-
-\begin{gather}
-    \textbf{dE}^{e} =
-        \begin{bmatrix}
-            0 &  0 &  0 & 0 \ \cr
-            0 & C\frac{dR\left(Q\_{in}^{e}\right)}{dQ\_{in}^{e}}Q\_{in}^{e} &  0 &  0
-        \end{bmatrix},
+            1 & -R\left(Q\_{in}^{e}\right) & -1 &  0 &  0 \ \cr
+            0 &  1 &  0 & -1 &  0 \ \cr
+            1 & -R\left(Q\_{in}^{e}\right) &  0 &  0 & -1
+        \end{bmatrix}.
 \end{gather}
 
 \begin{gather}
     \textbf{dF}^{e} =
         \begin{bmatrix}
-            0 & -\frac{dR\left(Q\_{in}^{e}\right)}{dQ\_{in}^{e}}Q\_{in}^{e}        &  0 & 0 \ \cr
-            0 &  C\frac{d^{2}R\left(Q\_{in}^{e}\right)}{d\left(Q\_{in}^{e}\right)^{2}}\frac{dQ\_{in}^{e}}{dt} &  0 & 0
+            0 & -R\_{s}\left(Q\_{in}^{e}\right) & 0 &  0 & 0 \ \cr
+            0 &  0 &  0 & 0 & 0 \ \cr
+            0 & -R\_{s}\left(Q\_{in}^{e}\right) & 0 &  0 & 0
         \end{bmatrix}.
 \end{gather}
 
-
-Note that the local $\textbf{dF}^{e}$ here is just an approximation. As such, the global $\textbf{K}$ is an inconsistent tangent matrix when the BloodVessel block is used.
 
 <h5> Junction </h5>
 
